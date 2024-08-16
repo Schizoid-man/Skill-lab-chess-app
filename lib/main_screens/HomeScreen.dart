@@ -1,7 +1,9 @@
 
 import 'dart:math';
+import 'dart:ui';
 
 import 'package:bishop/bishop.dart' as bishop;
+import 'package:chess_app/service/assetsManager.dart';
 import 'package:flutter/material.dart';
 import 'package:square_bishop/square_bishop.dart';
 import 'package:squares/squares.dart';
@@ -55,12 +57,45 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Flutter Chess'),
-        actions: [],),
-        body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white,), 
+          onPressed: () {
+            //TODO: show dialog if true
+          Navigator.pop(context);
+        },),
+        backgroundColor: Colors.black87,
+        title: Text('Flutter Chess', style: TextStyle(color: Colors.amber),),
+        actions: [
+          
+            IconButton(
+              onPressed: _resetGame,
+              icon: const Text('New Game'),
+            ),
+            IconButton(
+              onPressed: _flipBoard,
+              icon: const Icon(Icons.rotate_left, color: Colors.amberAccent,),
+            ),
+        ],
+        ),
+        body: Column(
+          //mainAxisAlignment: MainAxisAlignment.center, //add this later
           children: [
+            //Oppponent information
+            ListTile(
+              leading: CircleAvatar(
+                radius: 25,
+                backgroundImage: AssetImage(AssetsManager.stockfishIcon),
+                ),
+                title: const Text("Stockfish"),
+                subtitle: const Text("Rating: jalgaara"),
+                trailing: const Text("05:00"),
+              ),
+            
+        
+        
+        
+        
+        
             Padding(
               padding: const EdgeInsets.all(4.0),
               child: BoardController(
@@ -78,18 +113,22 @@ class _HomeScreenState extends State<HomeScreen> {
                 promotionBehaviour: PromotionBehaviour.autoPremove,
               ),
             ),
-            const SizedBox(height: 32),
-            OutlinedButton(
-              onPressed: _resetGame,
-              child: const Text('New Game'),
-            ),
-            IconButton(
-              onPressed: _flipBoard,
-              icon: const Icon(Icons.rotate_left),
-            ),
+        
+            //Player information
+            ListTile(
+              leading: CircleAvatar(
+                radius: 25,
+                backgroundImage: AssetImage(AssetsManager.userIcon),
+                ),
+                title: const Text("Edging Lord"),
+                subtitle: const Text("Rating: 5000"),
+                trailing: const Text("05:00"),
+              ),
+        
+        
+            
           ],
         ),
-      ),
     );
   }
 }
