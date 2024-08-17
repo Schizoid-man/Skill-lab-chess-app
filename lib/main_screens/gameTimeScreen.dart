@@ -14,7 +14,7 @@ class _GameTimeScreenState extends State<GameTimeScreen> {
   @override
   Widget build(BuildContext context) {
     final gameProvider = context.read<GameProvider>();
-    print("VS VALUE: {$gameProvider.vsComputer}");
+    //print("VS VALUE: {$gameProvider.vsComputer}");
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.black87,
