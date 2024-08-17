@@ -1,5 +1,7 @@
 import 'package:chess_app/helper/helperMethods.dart';
+import 'package:chess_app/providers/gameProvider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class GameTimeScreen extends StatefulWidget {
   const GameTimeScreen({super.key});
@@ -11,6 +13,8 @@ class GameTimeScreen extends StatefulWidget {
 class _GameTimeScreenState extends State<GameTimeScreen> {
   @override
   Widget build(BuildContext context) {
+    final gameProvider = context.read<GameProvider>();
+    print("VS VALUE: {$gameProvider.vsComputer}");
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.black87,
