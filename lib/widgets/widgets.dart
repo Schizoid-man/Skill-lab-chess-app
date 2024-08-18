@@ -1,5 +1,6 @@
 import 'package:chess_app/constants.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 
 class PlayerColorRadioButton extends StatelessWidget{
   const PlayerColorRadioButton({
@@ -123,4 +124,8 @@ class BuildCustomTime extends StatelessWidget {
                   );
 
   }
+}
+
+showSnackBar({required BuildContext context, required String content}){
+  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(content)),);
 }
