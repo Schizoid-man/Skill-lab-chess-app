@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 
 class GameStartUpScreen extends StatefulWidget {
-  const GameStartUpScreen({super.key});
-
+  const GameStartUpScreen({super.key, required this.isCustomTime, required this.gameTime});
+final bool isCustomTime;
+final String gameTime;
   @override
   State<GameStartUpScreen> createState() => _GameStartUpScreenState();
 }

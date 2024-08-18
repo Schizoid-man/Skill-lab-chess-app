@@ -45,7 +45,25 @@ class _GameTimeScreenState extends State<GameTimeScreen> {
               label: label,
               gameTime: gameTime,
               onTap: (){
-              Navigator.push(context, MaterialPageRoute(builder: (context) => GameStartUpScreen()));
+                if (label == 'Custom'){
+                  Navigator.push(
+                    context, 
+                    MaterialPageRoute(
+                      builder: (context) => GameStartUpScreen(
+                    isCustomTime:true,
+                    gameTime: gameTime,
+                  ),),);
+                }
+                else{
+                  Navigator.push(
+                    context, 
+                    MaterialPageRoute(
+                      builder: (context) => GameStartUpScreen(
+                        isCustomTime:true,
+                        gameTime: gameTime,
+                      )));
+                }
+              
             });
           }),
       )
