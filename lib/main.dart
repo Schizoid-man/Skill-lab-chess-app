@@ -1,4 +1,10 @@
+import 'package:chess_app/constants.dart';
+import 'package:chess_app/main_screens/GameScreen.dart';
 import 'package:chess_app/main_screens/HomeScreen.dart';
+import 'package:chess_app/main_screens/SettingsScreen.dart';
+import 'package:chess_app/main_screens/aboutScreen.dart';
+import 'package:chess_app/main_screens/gameStartUpScreen.dart';
+import 'package:chess_app/main_screens/gameTimeScreen.dart';
 import 'package:chess_app/providers/gameProvider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -23,7 +29,16 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const HomeScreen(),
+      //home: const HomeScreen(),
+      initialRoute: Constants.homeScreen,
+      routes: {
+        Constants.homeScreen: (context) => const HomeScreen(),
+        Constants.gameScreen: (context) => const GameScreen(),
+        Constants.settingScreen: (context) => const SettingsScreen(),
+        Constants.aboutScreen: (context) => const AboutScreen(),
+        
+        Constants.gameTimeScreen: (context) => const GameTimeScreen(),
+      },
     );
   }
 }

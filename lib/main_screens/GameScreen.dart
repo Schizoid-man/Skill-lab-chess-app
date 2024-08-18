@@ -3,8 +3,10 @@ import 'dart:math';
 import 'dart:ui';
 
 import 'package:bishop/bishop.dart' as bishop;
+import 'package:chess_app/providers/gameProvider.dart';
 import 'package:chess_app/service/assetsManager.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:square_bishop/square_bishop.dart';
 import 'package:squares/squares.dart';
 
@@ -54,6 +56,10 @@ class _GameScreenState extends State<GameScreen> {
   }
   @override
   Widget build(BuildContext context) {
+    final gameProvider = context.read<GameProvider>();
+
+    print('WhitesTime:${gameProvider.whitesTime}');
+     print('BlackssTime:${gameProvider.blacksTime}');
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -87,7 +93,10 @@ class _GameScreenState extends State<GameScreen> {
                 ),
                 title: const Text("Stockfish"),
                 subtitle: const Text("Rating: jalgaara"),
-                trailing: const Text("05:00"),
+                trailing:  Text(
+                  gameProvider.blacksTime.toString(),
+                  style: TextStyle(fontSize: 16),
+                  ),
               ),
             
         
@@ -121,7 +130,7 @@ class _GameScreenState extends State<GameScreen> {
                 ),
                 title: const Text("Edging Lord"),
                 subtitle: const Text("Rating: 5000"),
-                trailing: const Text("05:00"),
+                trailing: const Text("05:00",style: TextStyle(fontSize: 16),),
               ),
         
         
