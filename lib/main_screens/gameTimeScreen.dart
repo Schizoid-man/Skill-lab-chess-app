@@ -1,3 +1,4 @@
+import 'package:chess_app/constants.dart';
 import 'package:chess_app/helper/helperMethods.dart';
 import 'package:chess_app/main_screens/gameStartupScreen.dart';
 import 'package:chess_app/providers/gameProvider.dart';
@@ -45,7 +46,7 @@ class _GameTimeScreenState extends State<GameTimeScreen> {
               label: label,
               gameTime: gameTime,
               onTap: (){
-                if (label == 'Custom'){
+                if (label == Constants.custom){
                   Navigator.push(
                     context, 
                     MaterialPageRoute(
