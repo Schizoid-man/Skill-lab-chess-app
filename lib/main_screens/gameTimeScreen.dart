@@ -1,4 +1,5 @@
 import 'package:chess_app/helper/helperMethods.dart';
+import 'package:chess_app/main_screens/gameStartupScreen.dart';
 import 'package:chess_app/providers/gameProvider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -44,7 +45,7 @@ class _GameTimeScreenState extends State<GameTimeScreen> {
               label: label,
               gameTime: gameTime,
               onTap: (){
-              print('Selected game time: ${gameTimes[index]}');
+              Navigator.push(context, MaterialPageRoute(builder: (context) => GameStartUpScreen()));
             });
           }),
       )

@@ -7,7 +7,7 @@ Widget buildGameType({required label, String? gameTime, IconData? icon, required
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    icon !=null ? Icon(icon): Text(gameTime!),
+                    icon !=null ? Icon(icon): gameTime! == "60+0" ? const SizedBox.shrink(): Text(gameTime),
                     const SizedBox(height: 10,),
                     Text(label, style: TextStyle(fontWeight: FontWeight.bold),)
                   ],
