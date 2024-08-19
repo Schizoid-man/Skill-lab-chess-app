@@ -1,5 +1,5 @@
 
-
+import 'package:bishop/bishop.dart';
 import 'package:bishop/bishop.dart' as bishop;
 import 'package:chess_app/constants.dart';
 import 'package:flutter/material.dart';
@@ -60,10 +60,11 @@ class GameProvider extends ChangeNotifier{
         _player = Squares.white;
       }
       notifyListeners();
+    }
       //reset game
     _game = bishop.Game(variant: bishop.Variant.standard());
     _state = game.squaresState(_player);
-    }
+    
   }
 
   void flipTheBoard(){

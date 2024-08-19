@@ -2,7 +2,7 @@
 import 'dart:math';
 
 
-import 'package:bishop/bishop.dart';
+import 'package:bishop/bishop.dart' as bishop;
 import 'package:chess_app/providers/gameProvider.dart';
 import 'package:chess_app/service/assetsManager.dart';
 import 'package:flutter/material.dart';
@@ -27,7 +27,7 @@ class _GameScreenState extends State<GameScreen> {
   }
 
 
-  void _onMove(move) async {
+  void _onMove(Move move) async {
     print("move: $move ");
     // bool result = game.makeSquaresMove(move);
     // if (result) {
@@ -67,7 +67,7 @@ class _GameScreenState extends State<GameScreen> {
                 
                 gameProvider.resetGame(newGame: false);
               },
-              icon: const Text('New Game'),
+              icon: const Icon(Icons.start, color: Colors.amber,)
             ),
             IconButton(
               onPressed: (){
