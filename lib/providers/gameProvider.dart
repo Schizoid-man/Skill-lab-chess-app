@@ -1,11 +1,19 @@
 
 
-import 'package:bishop/bishop.dart';
+import 'package:bishop/bishop.dart' as bishop;
 import 'package:chess_app/constants.dart';
 import 'package:flutter/material.dart';
+import 'package:square_bishop/square_bishop.dart';
 import 'package:squares/squares.dart';
  
 class GameProvider extends ChangeNotifier{
+
+   late bishop.Game _game = bishop.Game(variant: bishop.Variant.standard());
+  late SquaresState _state = SquaresState.initial(0);
+  
+  bool _aiThinking = false;
+  bool _flipBoard = false;
+
   bool _vsComputer = false;
   bool _isLoading = false;
   int _gameLevel =1;
@@ -19,6 +27,12 @@ class GameProvider extends ChangeNotifier{
   // saved time
   Duration _savedWhitesTime = Duration.zero;
   Duration _savedBlacksTime = Duration.zero;
+
+  bishop.Game get game => _game;
+  SquaresState get state => _state;
+  bool get aiThinking => _aiThinking;
+  bool get flipBoard => _flipBoard;
+
   int get gameLevel=> _gameLevel;
   GameDifficulty get gameDifficulty => _gameDifficulty;
   int get player => _player;
@@ -35,6 +49,33 @@ class GameProvider extends ChangeNotifier{
   bool get vsComputer => _vsComputer;
   bool get isLoading => _isLoading;
 
+  //reset game
+  void resetGame ({required bool newGame}){
+    if (newGame) {
+      //check if the player was white in the previous game 
+      //so that we can give them black in the new game
+      if (_player == Squares.white) {
+        _player = Squares.black;
+      }else{
+        _player = Squares.white;
+      }
+      notifyListeners();
+      //reset game
+    _game = bishop.Game(variant: bishop.Variant.standard());
+    _state = game.squaresState(_player);
+    }
+  }
+
+  void flipTheBoard(){
+    _flipBoard = !_flipBoard;
+    notifyListeners();
+  }
+
+  void setAiThinking(bool value){
+    _aiThinking = value;
+    notifyListeners();
+
+  }
 
   //set incremental value
   void setIncrementalValue({required int value}){
