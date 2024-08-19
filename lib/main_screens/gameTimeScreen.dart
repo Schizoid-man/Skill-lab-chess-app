@@ -60,7 +60,7 @@ class _GameTimeScreenState extends State<GameTimeScreen> {
                     context, 
                     MaterialPageRoute(
                       builder: (context) => GameStartUpScreen(
-                        isCustomTime:true,
+                        isCustomTime:false,
                         gameTime: gameTime,
                       )));
                 }

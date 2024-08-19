@@ -23,26 +23,44 @@ class _GameScreenState extends State<GameScreen> {
     final gameProvider = context.read<GameProvider>();
 
     gameProvider.resetGame(newGame: false);
+    if(mounted){
+      letOtherPlayerPlayFirst();
+    }
     super.initState();
   }
 
+  void letOtherPlayerPlayFirst(){
+    //wait for widget to rebuild 
+    WidgetsBinding.instance.addPostFrameCallback((_)async{
+      final gameProvider = context.read<GameProvider>();
+      if (gameProvider.state.state == PlayState.theirTurn && !gameProvider.aiThinking) {
+      gameProvider.setAiThinking(true);
+      await Future.delayed(
+          Duration(milliseconds: Random().nextInt(4750) + 250));
+      gameProvider.game.makeRandomMove();
+      gameProvider.setAiThinking(false);
+      gameProvider.setSquaresState();
+    }
+    });
+  }
 
   void _onMove(Move move) async {
+    final gameProvider = context.read<GameProvider>();
+
     print("move: $move ");
-    // bool result = game.makeSquaresMove(move);
-    // if (result) {
-    //   setState(() => state = game.squaresState(player));
-    // }
-    // if (state.state == PlayState.theirTurn && !aiThinking) {
-    //   setState(() => aiThinking = true);
-    //   await Future.delayed(
-    //       Duration(milliseconds: Random().nextInt(4750) + 250));
-    //   game.makeRandomMove();
-    //   setState(() {
-    //     aiThinking = false;
-    //     state = game.squaresState(player);
-    //   });
-    // }
+    bool result = gameProvider.makeSquaresMove(move);
+    if (result) {
+      gameProvider.setSquaresState();
+    }
+    if (gameProvider.state.state == PlayState.theirTurn && !gameProvider.aiThinking) {
+      gameProvider.setAiThinking(true);
+      await Future.delayed(
+          Duration(milliseconds: Random().nextInt(4750) + 250));
+      gameProvider.game.makeRandomMove();
+      gameProvider.setAiThinking(false);
+      gameProvider.setSquaresState();
+      
+    }
   }
   @override
   Widget build(BuildContext context) {
