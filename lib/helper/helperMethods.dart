@@ -1,4 +1,8 @@
+import 'dart:async';
+
+import 'package:chess_app/providers/gameProvider.dart';
 import 'package:flutter/material.dart';
+import 'package:squares/squares.dart';
 
 Widget buildGameType({required label, String? gameTime, IconData? icon, required Function() onTap}){
   return InkWell(
@@ -14,6 +18,30 @@ Widget buildGameType({required label, String? gameTime, IconData? icon, required
                 ),
               ),
   );
+}
+
+String getTimerToDisplay({
+  required GameProvider gameProvider, 
+  required bool isUser,}){
+    String timer = "";
+    // check if it is the user
+    if(isUser){
+      if(gameProvider.player == Squares.white){
+        timer = gameProvider.whitesTime.toString().substring(2, 7);
+      }if(gameProvider.player == Squares.black){
+        timer = gameProvider.blacksTime.toString().substring(2, 7);
+      }
+    }else{
+      //other player(computer or person)
+      if(gameProvider.player == Squares.white){
+        timer = gameProvider.blacksTime.toString().substring(2, 7);
+      }if(gameProvider.player == Squares.black){
+        timer = gameProvider.whitesTime.toString().substring(2, 7);
+      }
+
+    }
+    return timer;
+
 }
 
 final List<String> gameTimes = [

@@ -1,8 +1,8 @@
 
 import 'dart:math';
 
-
 import 'package:bishop/bishop.dart' as bishop;
+import 'package:chess_app/helper/helperMethods.dart';
 import 'package:chess_app/providers/gameProvider.dart';
 import 'package:chess_app/service/assetsManager.dart';
 import 'package:flutter/material.dart';
@@ -39,8 +39,14 @@ class _GameScreenState extends State<GameScreen> {
           Duration(milliseconds: Random().nextInt(4750) + 250));
       gameProvider.game.makeRandomMove();
       gameProvider.setAiThinking(false);
-      gameProvider.setSquaresState();
-    }
+      gameProvider.setSquaresState().whenComplete((){
+        //pause timer for WHITE
+        gameProvider.pauseWhitesTimer();
+        startTimer(
+          isWhitesTimer: false, 
+          onNewGame: (){},
+          );
+      });}
     });
   }
 
@@ -50,7 +56,28 @@ class _GameScreenState extends State<GameScreen> {
     print("move: $move ");
     bool result = gameProvider.makeSquaresMove(move);
     if (result) {
-      gameProvider.setSquaresState();
+      gameProvider.setSquaresState().whenComplete((){
+
+        if(gameProvider.player== Squares.white){
+          //pause timer for white
+          gameProvider.pauseWhitesTimer();
+        startTimer(
+          isWhitesTimer: false, 
+          onNewGame: (){},
+          );
+        } else{
+          //pause timer for black
+          gameProvider.pauseBlacksTimer();
+        startTimer(
+          isWhitesTimer: true, 
+          onNewGame: (){},
+          );
+
+        }
+        
+        
+      });
+      
     }
     if (gameProvider.state.state == PlayState.theirTurn && !gameProvider.aiThinking) {
       gameProvider.setAiThinking(true);
@@ -58,8 +85,36 @@ class _GameScreenState extends State<GameScreen> {
           Duration(milliseconds: Random().nextInt(4750) + 250));
       gameProvider.game.makeRandomMove();
       gameProvider.setAiThinking(false);
-      gameProvider.setSquaresState();
+      gameProvider.setSquaresState().whenComplete((){
+        if(gameProvider.player== Squares.white){
+
+        //pause timer for black
+        gameProvider.pauseBlacksTimer();
+        startTimer(
+          isWhitesTimer: true, 
+          onNewGame: (){},
+          );
+        }else{
+          //pause timer for white
+        gameProvider.pauseWhitesTimer();
+        startTimer(
+          isWhitesTimer: false, 
+          onNewGame: (){},
+          );
+
+        }
+      });
       
+    }
+  }
+  void startTimer({required bool isWhitesTimer, required Function onNewGame}){
+    final gameProvider = context.read<GameProvider>();
+    if(isWhitesTimer){
+      // start timer for white
+      gameProvider.startWhitesTimer(context: context, onNewGame: onNewGame);
+    }else{
+      //start timer for black
+      gameProvider.startBlacksTimer(context: context, onNewGame: onNewGame);
     }
   }
   @override
@@ -97,6 +152,10 @@ class _GameScreenState extends State<GameScreen> {
         ),
         body: Consumer<GameProvider>(
           builder: (context, gameProvider, child) {
+
+            String whitesTimer = getTimerToDisplay(gameProvider: gameProvider, isUser: true,);
+            String blacksTimer = getTimerToDisplay(gameProvider: gameProvider, isUser: false,);
+
             return Column(
             //mainAxisAlignment: MainAxisAlignment.center, //add this later
             children: [
@@ -109,8 +168,8 @@ class _GameScreenState extends State<GameScreen> {
                   title: const Text("Stockfish"),
                   subtitle: const Text("Rating: jalgaara"),
                   trailing:  Text(
-                    gameProvider.blacksTime.toString(),
-                    style: TextStyle(fontSize: 16),
+                    blacksTimer,
+                    style: const TextStyle(fontSize: 16),
                     ),
                 ),
               
@@ -145,7 +204,7 @@ class _GameScreenState extends State<GameScreen> {
                   ),
                   title: const Text("Edging Lord"),
                   subtitle: const Text("Rating: 5000"),
-                  trailing: const Text("05:00",style: TextStyle(fontSize: 16),),
+                  trailing:  Text(whitesTimer,style: const TextStyle(fontSize: 16),),
                 ),
           
           

@@ -1,6 +1,6 @@
 
 import 'dart:async';
-import 'dart:nativewrappers/_internal/vm/lib/ffi_allocation_patch.dart';
+
 
 import 'package:bishop/bishop.dart' as bishop;
 import 'package:chess_app/constants.dart';
@@ -24,6 +24,8 @@ class GameProvider extends ChangeNotifier{
   int _player = Squares.white;
   Timer? _whitesTimer;
   Timer? _blacksTimer;
+  int _whitesScore = 0;
+  int _blacksScore = 0;
   PlayerColor _playerColor = PlayerColor.white;
   GameDifficulty _gameDifficulty = GameDifficulty.easy;
 
@@ -33,6 +35,9 @@ class GameProvider extends ChangeNotifier{
   // saved time
   Duration _savedWhitesTime = Duration.zero;
   Duration _savedBlacksTime = Duration.zero;
+  
+  int get whitesScore => _whitesScore;
+  int get blacksScore => _blacksScore;
 
   Timer? get whitesTimer => _whitesTimer;
   Timer? get blacksTimer => _blacksTimer;
@@ -195,14 +200,14 @@ class GameProvider extends ChangeNotifier{
           _blacksTimer!.cancel();
           notifyListeners();
           //todo: show game over dialog
-          print("Black has lost");
+          
         }
       });
   
     }
     void startWhitesTimer({required BuildContext context, required Function onNewGame}){
       _whitesTimer = Timer.periodic(const Duration(seconds: 1),(_){
-        _whitesTime = _blacksTime - const Duration(seconds: 1);
+        _whitesTime = _whitesTime - const Duration(seconds: 1);
         notifyListeners();
 
         if (_whitesTime <= Duration.zero){
@@ -215,5 +220,79 @@ class GameProvider extends ChangeNotifier{
       });
   
     }
+  //game over dialog 
+  void gameOverDialog({
+    required BuildContext context, 
+    required bool timeOut, 
+    required bool whiteWon, 
+    required Function onNewGame}){
+      String resultsToShow = "";
+      int whitesScoresToShow = 0;
+      int blacksScoresToShow = 0;
 
+      //check if it is a timeout 
+      if (timeOut) {
+        //check who has won and increment the results accordingly
+        if(whiteWon){
+          resultsToShow = "White won on Time";
+          whitesScoresToShow = _whitesScore + 1;
+        }else{
+          resultsToShow = "Black won on Time";
+          blacksScoresToShow = _blacksScore + 1;
+        }
+      }else{
+        //not a timeout (either checkmate or stalemate)
+        resultsToShow = game.result!.readable;
+
+        if(game.drawn){
+          // game is a draw
+          // 1/2 - 1/2
+          String whitesResults = game.result!.scoreString.split('_').first;
+          String blacksResults = game.result!.scoreString.split('_').last;
+
+          whitesScoresToShow = _whitesScore += int.parse(whitesResults);
+          blacksScoresToShow = _blacksScore += int.parse(blacksResults);
+        }
+        else if (game.winner == 0){
+          //implies white is the winner
+         String whitesResults = game.result!.scoreString.split('_').first;
+         whitesScoresToShow = _whitesScore += int.parse(whitesResults);
+
+        }else if (game.winner == 1){
+          //impliease black is the winner
+          String blacksResults = game.result!.scoreString.split('_').last;
+          blacksScoresToShow = _blacksScore += int.parse(blacksResults);
+        }else if(game.stalemate){
+          whitesScoresToShow = whitesScore;
+          blacksScoresToShow = blacksScore;
+        }
+ 
+      }
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder:(context)=> AlertDialog(
+          title: Text("Game Over \n $whitesScoresToShow - $blacksScoresToShow", 
+          textAlign: TextAlign.center,),
+          content: Text(resultsToShow, textAlign: TextAlign.center,),
+          actions: [
+            TextButton(onPressed: (){
+              Navigator.pop(context);
+              //Navigate to home screen
+              Navigator.pushNamedAndRemoveUntil(context, Constants.homeScreen, (route)=> false);
+            }, child: const Text("Cancel", style: TextStyle(color: Colors.red),)),
+            TextButton(onPressed: (){
+              Navigator.pop(context);
+              //reset the game
+            }, child: const Text("New Game", style: TextStyle(color: Colors.green),))
+          ],
+        ));
+    }
+    // String getResultsToShow({required bool whiteWon}){
+    //   if (whiteWon){
+    //     return "White won on Time";
+    //   }else{
+    //     return "Black won on Time";
+    //   }
+    // }
 }
