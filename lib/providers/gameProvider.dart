@@ -4,10 +4,12 @@ import 'dart:async';
 
 import 'package:bishop/bishop.dart' as bishop;
 import 'package:chess_app/constants.dart';
+import 'package:chess_app/helper/uciCommands.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:square_bishop/square_bishop.dart';
 import 'package:squares/squares.dart';
+import 'package:stockfish/stockfish.dart';
  
 class GameProvider extends ChangeNotifier{
 
@@ -62,6 +64,11 @@ class GameProvider extends ChangeNotifier{
   //get method
   bool get vsComputer => _vsComputer;
   bool get isLoading => _isLoading;
+
+  //get position fen
+  getPositionFen(){
+    return game.fen;
+  }
 
   //reset game
   void resetGame ({required bool newGame}){
@@ -190,7 +197,7 @@ class GameProvider extends ChangeNotifier{
       }    
     }
     // start blacks timer 
-    void startBlacksTimer({required BuildContext context, required Function onNewGame}){
+    void startBlacksTimer({required BuildContext context, Stockfish? stockfish, required Function onNewGame}){
       _blacksTimer = Timer.periodic(const Duration(seconds: 1),(_){
         _blacksTime = _blacksTime - const Duration(seconds: 1);
         notifyListeners();
@@ -202,7 +209,8 @@ class GameProvider extends ChangeNotifier{
           //show game over dialog
           if(context.mounted){
             gameOverDialog(
-              context: context, 
+              context: context,
+              stockfish: stockfish,
               timeOut: true, 
               whiteWon: true, 
               onNewGame: onNewGame,
@@ -214,12 +222,13 @@ class GameProvider extends ChangeNotifier{
   
     }
     //starts black timer
-    void startWhitesTimer({required BuildContext context, required Function onNewGame}){
+    void startWhitesTimer({required BuildContext context,Stockfish? stockfish, required Function onNewGame}){
       _whitesTimer = Timer.periodic(const Duration(seconds: 1),(_){
         _whitesTime = _whitesTime - const Duration(seconds: 1);
         notifyListeners();
 
         if (_whitesTime <= Duration.zero){
+        
           //whites timeout - white has lost the game 
           _whitesTimer!.cancel();
           notifyListeners();
@@ -227,6 +236,7 @@ class GameProvider extends ChangeNotifier{
           if(context.mounted){
             gameOverDialog(
               context: context, 
+              stockfish: stockfish,
               timeOut: true, 
               whiteWon: false, 
               onNewGame: onNewGame,
@@ -238,8 +248,9 @@ class GameProvider extends ChangeNotifier{
     }
 
     //game over listener
-    void gameOverListener({required BuildContext context, required Function onNewGame,}){
+    void gameOverListener({required BuildContext context, Stockfish? stockfish,required Function onNewGame,}){
       if (game.gameOver){
+       
         //pause the timers
         pauseWhitesTimer();
         pauseBlacksTimer();
@@ -247,7 +258,8 @@ class GameProvider extends ChangeNotifier{
         //show game over dialog
           if(context.mounted){
             gameOverDialog(
-              context: context, 
+              context: context,
+              stockfish: stockfish,
               timeOut: false, 
               whiteWon: false, 
               onNewGame: onNewGame,
@@ -258,9 +270,15 @@ class GameProvider extends ChangeNotifier{
   //game over dialog 
   void gameOverDialog({
     required BuildContext context, 
+    Stockfish? stockfish,
     required bool timeOut, 
     required bool whiteWon, 
     required Function onNewGame}){
+
+      //stop stockfish engine
+        if(stockfish != null){
+          stockfish.stdin = UCICommands.stop;
+        }
       String resultsToShow = "";
       int whitesScoresToShow = 0;
       int blacksScoresToShow = 0;
