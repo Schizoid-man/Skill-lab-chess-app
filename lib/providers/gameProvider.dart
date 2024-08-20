@@ -199,12 +199,21 @@ class GameProvider extends ChangeNotifier{
           //blacks timeout - black has lost the game 
           _blacksTimer!.cancel();
           notifyListeners();
-          //todo: show game over dialog
+          //show game over dialog
+          if(context.mounted){
+            gameOverDialog(
+              context: context, 
+              timeOut: true, 
+              whiteWon: true, 
+              onNewGame: onNewGame,
+              );
+          }
           
         }
       });
   
     }
+    //starts black timer
     void startWhitesTimer({required BuildContext context, required Function onNewGame}){
       _whitesTimer = Timer.periodic(const Duration(seconds: 1),(_){
         _whitesTime = _whitesTime - const Duration(seconds: 1);
@@ -214,11 +223,37 @@ class GameProvider extends ChangeNotifier{
           //whites timeout - white has lost the game 
           _whitesTimer!.cancel();
           notifyListeners();
-          //todo: show game over dialog
-          print("White has lost");
+          //show game over dialog
+          if(context.mounted){
+            gameOverDialog(
+              context: context, 
+              timeOut: true, 
+              whiteWon: false, 
+              onNewGame: onNewGame,
+              );
+          }
         }
       });
   
+    }
+
+    //game over listener
+    void gameOverListener({required BuildContext context, required Function onNewGame,}){
+      if (game.gameOver){
+        //pause the timers
+        pauseWhitesTimer();
+        pauseBlacksTimer();
+
+        //show game over dialog
+          if(context.mounted){
+            gameOverDialog(
+              context: context, 
+              timeOut: false, 
+              whiteWon: false, 
+              onNewGame: onNewGame,
+              );
+          }
+      }
     }
   //game over dialog 
   void gameOverDialog({

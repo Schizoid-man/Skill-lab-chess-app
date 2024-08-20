@@ -106,6 +106,17 @@ class _GameScreenState extends State<GameScreen> {
       });
       
     }
+
+    //listen if it is game over
+    checkGameOverListener();
+  }
+  
+  void checkGameOverListener(){
+    final gameProvider = context.read<GameProvider>();
+    gameProvider.gameOverListener(context: context, onNewGame: (){
+      // start new game
+    },);
+
   }
   void startTimer({required bool isWhitesTimer, required Function onNewGame}){
     final gameProvider = context.read<GameProvider>();
