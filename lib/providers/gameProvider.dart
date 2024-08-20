@@ -21,6 +21,8 @@ class GameProvider extends ChangeNotifier{
 
   bool _vsComputer = false;
   bool _isLoading = false;
+  bool _playWhitesTimer = true;
+  bool _playBlacksTimer = true;
   int _gameLevel =1;
   int _incrementalValue = 0;
   int _player = Squares.white;
@@ -37,6 +39,9 @@ class GameProvider extends ChangeNotifier{
   // saved time
   Duration _savedWhitesTime = Duration.zero;
   Duration _savedBlacksTime = Duration.zero;
+
+  bool get playWhitesTimer => _playWhitesTimer;
+  bool get playBlacksTimer => _playBlacksTimer;
   
   int get whitesScore => _whitesScore;
   int get blacksScore => _blacksScore;
@@ -65,6 +70,19 @@ class GameProvider extends ChangeNotifier{
   bool get vsComputer => _vsComputer;
   bool get isLoading => _isLoading;
 
+  // set play whitesTimer
+  Future<void> setPlayWhitesTimer({required bool value}) async{
+    _playWhitesTimer = value;
+    notifyListeners();
+
+  }
+
+  //set play blacksTimer
+  Future<void> setPlayBlacksTimer({required bool value}) async{
+    _playBlacksTimer = value;
+    notifyListeners();
+
+  }
   //get position fen
   getPositionFen(){
     return game.fen;
@@ -93,6 +111,14 @@ class GameProvider extends ChangeNotifier{
         notifyListeners();
         return result;
   }
+
+  bool makeStringMove(String bestMove){
+        bool result = game.makeMoveString(bestMove);
+        notifyListeners();
+        return result;
+  }
+  
+  
   
   
 
@@ -197,30 +223,46 @@ class GameProvider extends ChangeNotifier{
       }    
     }
     // start blacks timer 
-    void startBlacksTimer({required BuildContext context, Stockfish? stockfish, required Function onNewGame}){
-      _blacksTimer = Timer.periodic(const Duration(seconds: 1),(_){
-        _blacksTime = _blacksTime - const Duration(seconds: 1);
-        notifyListeners();
+    void startBlacksTimer({required BuildContext context, required Stockfish stockfish, required Function onNewGame}) {
+  _blacksTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+    _blacksTime = _blacksTime - const Duration(seconds: 1);
+    notifyListeners();
 
-        if (_blacksTime <= Duration.zero){
-          //blacks timeout - black has lost the game 
-          _blacksTimer!.cancel();
-          notifyListeners();
-          //show game over dialog
-          if(context.mounted){
-            gameOverDialog(
-              context: context,
-              stockfish: stockfish,
-              timeOut: true, 
-              whiteWon: true, 
-              onNewGame: onNewGame,
-              );
-          }
-          
-        }
-      });
-  
+    if (_blacksTime <= Duration.zero) {
+      _blacksTimer!.cancel();
+      notifyListeners();
+      if (context.mounted) {
+        gameOverDialog(
+          context: context,
+          stockfish: stockfish,
+          timeOut: true,
+          whiteWon: true,
+          onNewGame: onNewGame,
+        );
+      }
     }
+  });
+
+  // Start Stockfish move with time control
+  makeStockfishMove(stockfish);
+}
+
+void makeStockfishMove(Stockfish stockfish) {
+  int thinkingTimeMillis = _blacksTime.inMilliseconds > 2000 ? 2000 : _blacksTime.inMilliseconds;
+  stockfish.stdin = 'go movetime $thinkingTimeMillis';
+
+  // Optionally, handle asynchronous response from Stockfish here
+  stockfish.stdout.listen((line) {
+    if (line.startsWith('bestmove')) {
+      String bestMove = line.split(' ')[1];
+      // Make the move in the game
+      makeStringMove(bestMove);
+      // Update timer or any other game state
+    }
+  });
+}
+
+
     //starts black timer
     void startWhitesTimer({required BuildContext context,Stockfish? stockfish, required Function onNewGame}){
       _whitesTimer = Timer.periodic(const Duration(seconds: 1),(_){
@@ -250,7 +292,7 @@ class GameProvider extends ChangeNotifier{
     //game over listener
     void gameOverListener({required BuildContext context, Stockfish? stockfish,required Function onNewGame,}){
       if (game.gameOver){
-       
+      
         //pause the timers
         pauseWhitesTimer();
         pauseBlacksTimer();
@@ -269,78 +311,103 @@ class GameProvider extends ChangeNotifier{
     }
   //game over dialog 
   void gameOverDialog({
-    required BuildContext context, 
-    Stockfish? stockfish,
-    required bool timeOut, 
-    required bool whiteWon, 
-    required Function onNewGame}){
+  required BuildContext context,
+  Stockfish? stockfish,
+  required bool timeOut,
+  required bool whiteWon,
+  required Function onNewGame
+}) {
+  // Stop stockfish engine
+  if (stockfish != null) {
+    stockfish.stdin = UCICommands.stop;
+  }
 
-      //stop stockfish engine
-        if(stockfish != null){
-          stockfish.stdin = UCICommands.stop;
-        }
-      String resultsToShow = "";
-      int whitesScoresToShow = 0;
-      int blacksScoresToShow = 0;
+  String resultsToShow = "";
+  int whitesScoresToShow = _whitesScore;
+  int blacksScoresToShow = _blacksScore;
 
-      //check if it is a timeout 
-      if (timeOut) {
-        //check who has won and increment the results accordingly
-        if(whiteWon){
-          resultsToShow = "White won on Time";
-          whitesScoresToShow = _whitesScore + 1;
-        }else{
-          resultsToShow = "Black won on Time";
-          blacksScoresToShow = _blacksScore + 1;
-        }
-      }else{
-        //not a timeout (either checkmate or stalemate)
-        resultsToShow = game.result!.readable;
-
-        if(game.drawn){
-          // game is a draw
-          // 1/2 - 1/2
-          String whitesResults = game.result!.scoreString.split('_').first;
-          String blacksResults = game.result!.scoreString.split('_').last;
-
-          whitesScoresToShow = _whitesScore += int.parse(whitesResults);
-          blacksScoresToShow = _blacksScore += int.parse(blacksResults);
-        }
-        else if (game.winner == 0){
-          //implies white is the winner
-         String whitesResults = game.result!.scoreString.split('_').first;
-         whitesScoresToShow = _whitesScore += int.parse(whitesResults);
-
-        }else if (game.winner == 1){
-          //impliease black is the winner
-          String blacksResults = game.result!.scoreString.split('_').last;
-          blacksScoresToShow = _blacksScore += int.parse(blacksResults);
-        }else if(game.stalemate){
-          whitesScoresToShow = whitesScore;
-          blacksScoresToShow = blacksScore;
-        }
- 
-      }
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder:(context)=> AlertDialog(
-          title: Text("Game Over \n $whitesScoresToShow - $blacksScoresToShow", 
-          textAlign: TextAlign.center,),
-          content: Text(resultsToShow, textAlign: TextAlign.center,),
-          actions: [
-            TextButton(onPressed: (){
-              Navigator.pop(context);
-              //Navigate to home screen
-              Navigator.pushNamedAndRemoveUntil(context, Constants.homeScreen, (route)=> false);
-            }, child: const Text("Cancel", style: TextStyle(color: Colors.red),)),
-            TextButton(onPressed: (){
-              Navigator.pop(context);
-              //reset the game
-            }, child: const Text("New Game", style: TextStyle(color: Colors.green),))
-          ],
-        ));
+  if (timeOut) {
+    resultsToShow = whiteWon ? "White won on Time" : "Black won on Time";
+    if (whiteWon) {
+      whitesScoresToShow += 1;
+    } else {
+      blacksScoresToShow += 1;
     }
+  } else {
+    resultsToShow = game.result!.readable;
+
+    if (game.drawn) {
+      List<String> results = game.result!.scoreString.split('_');
+      if (results.length == 2) {
+        String whitesResults = results[0];
+        String blacksResults = results[1];
+
+        whitesScoresToShow += safeParse(whitesResults);
+        blacksScoresToShow += safeParse(blacksResults);
+      }
+    } else if (game.winner == 0) {
+      String whitesResults = game.result!.scoreString.split('_').first;
+      whitesScoresToShow += safeParse(whitesResults);
+    } else if (game.winner == 1) {
+      String blacksResults = game.result!.scoreString.split('_').last;
+      blacksScoresToShow += safeParse(blacksResults);
+    } else if (game.stalemate) {
+      // Handle stalemate scenario
+    }
+  }
+
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (context) => AlertDialog(
+      title: Text(
+        "Game Over \n ${whitesScoresToShow} - ${blacksScoresToShow}",
+        textAlign: TextAlign.center,
+      ),
+      content: Text(
+        resultsToShow,
+        textAlign: TextAlign.center,
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.pop(context);
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              Constants.homeScreen,
+              (route) => false,
+            );
+          },
+          child: const Text(
+            "Cancel",
+            style: TextStyle(color: Colors.red),
+          ),
+        ),
+        TextButton(
+          onPressed: () {
+            Navigator.pop(context);
+            // Reset the game
+          },
+          child: const Text(
+            "New Game",
+            style: TextStyle(color: Colors.green),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+// Define safeParse method
+int safeParse(String value) {
+  try {
+    return int.parse(value);
+  } catch (e) {
+    // Handle parsing error, e.g., log it or return a default value
+    return 0; // Default value if parsing fails
+  }
+}
+
     // String getResultsToShow({required bool whiteWon}){
     //   if (whiteWon){
     //     return "White won on Time";

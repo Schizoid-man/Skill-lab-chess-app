@@ -43,20 +43,65 @@ class _GameScreenState extends State<GameScreen> {
     //wait for widget to rebuild 
     WidgetsBinding.instance.addPostFrameCallback((_)async{
       final gameProvider = context.read<GameProvider>();
-      if (gameProvider.state.state == PlayState.theirTurn && !gameProvider.aiThinking) {
+     if (gameProvider.state.state == PlayState.theirTurn && !gameProvider.aiThinking) {
       gameProvider.setAiThinking(true);
-      await Future.delayed(
-          Duration(milliseconds: Random().nextInt(4750) + 250));
-      gameProvider.game.makeRandomMove();
-      gameProvider.setAiThinking(false);
-      gameProvider.setSquaresState().whenComplete((){
-        //pause timer for WHITE
-        gameProvider.pauseWhitesTimer();
-        startTimer(
-          isWhitesTimer: false, 
-          onNewGame: (){},
-          );
-      });}
+
+      //wait until our stockfish is ready
+      await waitUntilReady();
+
+      //get the current position of the board and send it to stockfish :)
+      stockfish.stdin = '${UCICommands.position} ${gameProvider.getPositionFen()}';
+      //set difficulty of stockfish T_T
+      stockfish.stdin = '${UCICommands.goMoveTime} ${gameProvider.gameLevel * 500}';
+
+      stockfish.stdout.listen((event) {
+        if(event.contains(UCICommands.bestMove)){
+          final bestMove = event.split(' ')[1];
+          gameProvider.makeStringMove(bestMove);
+          gameProvider.setAiThinking(false);
+          gameProvider.setSquaresState().whenComplete((){
+         if(gameProvider.player== Squares.white){
+          // check if we can play whites timer
+          if(gameProvider.playWhitesTimer){
+              gameProvider.pauseBlacksTimer();
+          startTimer(
+          isWhitesTimer: true, 
+           onNewGame: (){},
+           );
+
+           gameProvider.setPlayWhitesTimer(value: false);
+
+          }
+
+         //pause timer for black
+      
+         }else{
+          if(gameProvider.playBlacksTimer){
+             gameProvider.pauseWhitesTimer();
+         startTimer(
+           isWhitesTimer: false, 
+           onNewGame: (){},
+           );
+           gameProvider.setPlayBlacksTimer(value: false);
+
+          }
+           //pause timer for white
+        
+
+         }
+       });
+
+
+        }
+        
+        
+      },);
+
+
+
+      
+      
+    }
     });
   }
 
@@ -74,6 +119,9 @@ class _GameScreenState extends State<GameScreen> {
           isWhitesTimer: false, 
           onNewGame: (){},
           );
+          //set bool flag to true so that we dont run this code again until true
+
+          gameProvider.setPlayWhitesTimer(value: true);
         } else{
           //pause timer for black
           gameProvider.pauseBlacksTimer();
@@ -81,6 +129,9 @@ class _GameScreenState extends State<GameScreen> {
           isWhitesTimer: true, 
           onNewGame: (){},
           );
+
+            //set bool flag to true so that we dont run this code again until true
+          gameProvider.setPlayBlacksTimer(value: true);
 
         }
         
@@ -97,10 +148,48 @@ class _GameScreenState extends State<GameScreen> {
       //get the current position of the board and send it to stockfish :)
       stockfish.stdin = '${UCICommands.position} ${gameProvider.getPositionFen()}';
       //set difficulty of stockfish T_T
-      stockfish.stdin = '${UCICommands.goMoveTime} ${gameProvider.gameLevel * 1000}';
+      stockfish.stdin = '${UCICommands.goMoveTime} ${gameProvider.gameLevel * 500}';
 
       stockfish.stdout.listen((event) {
-        print("events ###########################: $event");
+        if(event.contains(UCICommands.bestMove)){
+          final bestMove = event.split(' ')[1];
+          gameProvider.makeStringMove(bestMove);
+          gameProvider.setAiThinking(false);
+          gameProvider.setSquaresState().whenComplete((){
+         if(gameProvider.player== Squares.white){
+          // check if we can play whites timer
+          if(gameProvider.playWhitesTimer){
+              gameProvider.pauseBlacksTimer();
+          startTimer(
+          isWhitesTimer: true, 
+           onNewGame: (){},
+           );
+
+           gameProvider.setPlayWhitesTimer(value: false);
+
+          }
+
+         //pause timer for black
+      
+         }else{
+          if(gameProvider.playBlacksTimer){
+             gameProvider.pauseWhitesTimer();
+         startTimer(
+           isWhitesTimer: false, 
+           onNewGame: (){},
+           );
+           gameProvider.setPlayBlacksTimer(value: false);
+
+          }
+           //pause timer for white
+        
+
+         }
+       });
+
+
+        }
+        
         
       },);
 
@@ -109,7 +198,7 @@ class _GameScreenState extends State<GameScreen> {
       // await Future.delayed(
       //     Duration(milliseconds: Random().nextInt(4750) + 250));
       
-      // gameProvider.setAiThinking(false);
+      // `gameProvider.setAiThinking(false);`
       // gameProvider.setSquaresState().whenComplete((){
       //   if(gameProvider.player== Squares.white){
 
@@ -209,7 +298,7 @@ Future<void> waitUntilReady() async{
                   backgroundImage: AssetImage(AssetsManager.stockfishIcon),
                   ),
                   title: const Text("Stockfish"),
-                  subtitle: const Text("Rating: jalgaara"),
+                  subtitle: const Text("Rating: 500"),
                   trailing:  Text(
                     blacksTimer,
                     style: const TextStyle(fontSize: 16),
@@ -246,7 +335,7 @@ Future<void> waitUntilReady() async{
                   backgroundImage: AssetImage(AssetsManager.userIcon),
                   ),
                   title: const Text("Edging Lord"),
-                  subtitle: const Text("Rating: 5000"),
+                  subtitle: const Text("Rating: 300"),
                   trailing:  Text(whitesTimer,style: const TextStyle(fontSize: 16),),
                 ),
           
