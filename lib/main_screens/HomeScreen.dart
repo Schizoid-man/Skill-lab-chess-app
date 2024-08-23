@@ -40,23 +40,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   Navigator.push(context,
                    MaterialPageRoute(builder: (context)=> const GameTimeScreen(),),);
                 }),
-              buildGameType(
-                label: 'vs Player', 
-                icon: Icons.person, 
-                onTap: (){
-                  gameProvider.setVsComputer(value: false);
-                  // navigate to gametimescreen
-                  Navigator.push(context,
-                   MaterialPageRoute(builder: (context)=> const GameTimeScreen(),),);
-                }),
-                buildGameType(
-                label: 'Settings', 
-                icon: Icons.settings, 
-                onTap: (){
-                  //navigate to settings screen
-                  Navigator.push(context,
-                   MaterialPageRoute(builder: (context)=> const SettingsScreen(),),);
-                }),
+             
                 buildGameType(
                 label: 'About', 
                 icon: Icons.info, 

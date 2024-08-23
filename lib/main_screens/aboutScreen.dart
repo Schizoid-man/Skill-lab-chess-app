@@ -12,7 +12,7 @@ class _AboutScreenState extends State<AboutScreen> {
   Widget build(BuildContext context) {
     return const Scaffold(
       body: Center(
-        child: Text('About Screen'),
+        child: Text('Made by Rishab & Reynesh'),
       ),
     );
   }
