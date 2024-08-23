@@ -361,7 +361,7 @@ void makeStockfishMove(Stockfish stockfish) {
     barrierDismissible: false,
     builder: (context) => AlertDialog(
       title: Text(
-        "Game Over \n ${whitesScoresToShow} - ${blacksScoresToShow}",
+        "Game Over \n Well played!",
         textAlign: TextAlign.center,
       ),
       content: Text(
@@ -379,20 +379,11 @@ void makeStockfishMove(Stockfish stockfish) {
             );
           },
           child: const Text(
-            "Cancel",
+            "Return to Home Screen",
             style: TextStyle(color: Colors.red),
           ),
         ),
-        TextButton(
-          onPressed: () {
-            Navigator.pop(context);
-            // Reset the game
-          },
-          child: const Text(
-            "New Game",
-            style: TextStyle(color: Colors.green),
-          ),
-        ),
+        
       ],
     ),
   );

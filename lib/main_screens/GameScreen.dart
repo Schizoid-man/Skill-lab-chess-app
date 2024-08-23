@@ -334,7 +334,7 @@ Future<void> waitUntilReady() async{
                   radius: 25,
                   backgroundImage: AssetImage(AssetsManager.userIcon),
                   ),
-                  title: const Text("Edging Lord"),
+                  title: const Text("Player 1"),
                   subtitle: const Text("Rating: 300"),
                   trailing:  Text(whitesTimer,style: const TextStyle(fontSize: 16),),
                 ),
